@@ -3,6 +3,7 @@
 #include <sstream>
 #include "HostProxy.h"
 #include "JSIV8ValueConverter.h"
+#include "V8Inspector.h"
 #include "V8PointerValue.h"
 #include "jsi/jsilib.h"
 
@@ -11,7 +12,7 @@ namespace facebook {
 // static
 std::unique_ptr<v8::Platform> V8Runtime::s_platform = nullptr;
 
-V8Runtime::V8Runtime(const std::string &timezoneId) {
+V8Runtime::V8Runtime(const V8RuntimeConfig &config) {
   if (!s_platform) {
     s_platform = v8::platform::NewDefaultPlatform();
     v8::V8::InitializeICU();
@@ -25,14 +26,22 @@ V8Runtime::V8Runtime(const std::string &timezoneId) {
   createParams.array_buffer_allocator = arrayBufferAllocator_.get();
   isolate_ = v8::Isolate::New(createParams);
   isolate_->DateTimeConfigurationChangeNotification(
-      v8::Isolate::TimeZoneDetection::kCustom, timezoneId.c_str());
+      v8::Isolate::TimeZoneDetection::kCustom, config.timezoneId.c_str());
   isolate_->Enter();
   v8::HandleScope scopedIsolate(isolate_);
   context_.Reset(isolate_, CreateGlobalContext(isolate_));
+  if (config.enableInspector) {
+    inspectorClient_ =
+        std::make_unique<InspectorClient>(context_.Get(isolate_));
+  }
   context_.Get(isolate_)->Enter();
 }
 
 V8Runtime::~V8Runtime() {
+  if (inspectorClient_) {
+    inspectorClient_.reset();
+  }
+
   {
     v8::HandleScope scopedIsolate(isolate_);
     v8::Local<v8::Context> context = context_.Get(isolate_);
@@ -181,7 +190,7 @@ std::string V8Runtime::description() {
 }
 
 bool V8Runtime::isInspectable() {
-  return false;
+  return true;
 }
 
 // These clone methods are shallow clone
