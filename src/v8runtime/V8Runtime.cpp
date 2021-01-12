@@ -24,12 +24,8 @@ V8Runtime::V8Runtime(const std::string &timezoneId) {
   v8::Isolate::CreateParams createParams;
   createParams.array_buffer_allocator = arrayBufferAllocator_.get();
   isolate_ = v8::Isolate::New(createParams);
-#if defined(__ANDROID__)
-  if (!timezoneId.empty()) {
-    isolate_->DateTimeConfigurationChangeNotification(
-        v8::Isolate::TimeZoneDetection::kCustom, timezoneId.c_str());
-  }
-#endif
+  isolate_->DateTimeConfigurationChangeNotification(
+      v8::Isolate::TimeZoneDetection::kCustom, timezoneId.c_str());
   isolate_->Enter();
   v8::HandleScope scopedIsolate(isolate_);
   context_.Reset(isolate_, CreateGlobalContext(isolate_));
@@ -599,7 +595,7 @@ jsi::WeakObject V8Runtime::createWeakObject(const jsi::Object &weakObject) {
   throw std::logic_error("Not implemented");
 }
 
-jsi::Value V8Runtime::lockWeakObject(jsi::WeakObject &weakObject) {
+jsi::Value V8Runtime::lockWeakObject(const jsi::WeakObject &weakObject) {
   throw std::logic_error("Not implemented");
 }
 
