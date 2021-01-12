@@ -25,7 +25,7 @@
     "build": "bash -c '. ./scripts/export_npm_env.sh && ./scripts/build.sh'"
   },
   "config": {
-    "RN_VERSION": "v0.61.5"
+    "RN_VERSION": "react_native_0.61.5_native_exception"
   },
   "dependencies": {
     "v8-android": "~8.84.0"
