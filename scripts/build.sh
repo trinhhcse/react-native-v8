@@ -28,8 +28,8 @@ done
 ######################################################################################
 
 cd $BUILD_DIR
-yarn
-./gradlew :ReactAndroid:installArchives
+# yarn
+# ./gradlew :ReactAndroid:installArchives
 
 mkdir -p $DIST_DIR
 cp -Rf $BUILD_DIR/android/* $DIST_DIR
